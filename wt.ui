@@ -1,0 +1,658 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>626</width>
+    <height>656</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Worktime Recorder Helper</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <widget class="QGroupBox" name="groupBox">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>10</y>
+      <width>601</width>
+      <height>191</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>Input data</string>
+    </property>
+    <widget class="QLineEdit" name="lineEditFirstName">
+     <property name="geometry">
+      <rect>
+       <x>86</x>
+       <y>30</y>
+       <width>189</width>
+       <height>21</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>32</y>
+       <width>71</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>First name</string>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="lineEditLastName">
+     <property name="geometry">
+      <rect>
+       <x>398</x>
+       <y>30</y>
+       <width>189</width>
+       <height>21</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_2">
+     <property name="geometry">
+      <rect>
+       <x>322</x>
+       <y>32</y>
+       <width>71</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Last name</string>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="lineEditGroupName">
+     <property name="geometry">
+      <rect>
+       <x>86</x>
+       <y>60</y>
+       <width>189</width>
+       <height>21</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_3">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>60</y>
+       <width>71</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Group</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_4">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>122</y>
+       <width>111</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Target month</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_5">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>150</y>
+       <width>111</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Template path</string>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="lineEditWorkingPath">
+     <property name="geometry">
+      <rect>
+       <x>109</x>
+       <y>150</y>
+       <width>427</width>
+       <height>21</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_6">
+     <property name="geometry">
+      <rect>
+       <x>184</x>
+       <y>120</y>
+       <width>36</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>year</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="pushButtonSelectWorkingDir">
+     <property name="geometry">
+      <rect>
+       <x>539</x>
+       <y>146</y>
+       <width>51</width>
+       <height>32</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>...</string>
+     </property>
+    </widget>
+    <widget class="QSpinBox" name="spinBoxTargetMonth">
+     <property name="geometry">
+      <rect>
+       <x>108</x>
+       <y>118</y>
+       <width>60</width>
+       <height>24</height>
+      </rect>
+     </property>
+     <property name="minimum">
+      <number>1</number>
+     </property>
+     <property name="maximum">
+      <number>12</number>
+     </property>
+    </widget>
+    <widget class="QSpinBox" name="spinBoxTargetYear">
+     <property name="geometry">
+      <rect>
+       <x>217</x>
+       <y>118</y>
+       <width>80</width>
+       <height>24</height>
+      </rect>
+     </property>
+     <property name="minimum">
+      <number>2000</number>
+     </property>
+     <property name="maximum">
+      <number>3000</number>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_13">
+     <property name="geometry">
+      <rect>
+       <x>339</x>
+       <y>122</y>
+       <width>56</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Balance</string>
+     </property>
+    </widget>
+    <widget class="QSpinBox" name="spinBoxBalanceHours">
+     <property name="geometry">
+      <rect>
+       <x>398</x>
+       <y>118</y>
+       <width>60</width>
+       <height>24</height>
+      </rect>
+     </property>
+     <property name="minimum">
+      <number>-1000</number>
+     </property>
+     <property name="maximum">
+      <number>1000</number>
+     </property>
+    </widget>
+    <widget class="QSpinBox" name="spinBoxBalanceMinutes">
+     <property name="geometry">
+      <rect>
+       <x>494</x>
+       <y>118</y>
+       <width>60</width>
+       <height>24</height>
+      </rect>
+     </property>
+     <property name="minimum">
+      <number>0</number>
+     </property>
+     <property name="maximum">
+      <number>59</number>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_14">
+     <property name="geometry">
+      <rect>
+       <x>466</x>
+       <y>122</y>
+       <width>16</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>h</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_15">
+     <property name="geometry">
+      <rect>
+       <x>560</x>
+       <y>122</y>
+       <width>16</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>m</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_16">
+     <property name="geometry">
+      <rect>
+       <x>292</x>
+       <y>60</y>
+       <width>97</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Target balance</string>
+     </property>
+    </widget>
+    <widget class="QSpinBox" name="spinBoxTargetBalanceHours">
+     <property name="geometry">
+      <rect>
+       <x>396</x>
+       <y>57</y>
+       <width>60</width>
+       <height>24</height>
+      </rect>
+     </property>
+     <property name="minimum">
+      <number>-1000</number>
+     </property>
+     <property name="maximum">
+      <number>1000</number>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_17">
+     <property name="geometry">
+      <rect>
+       <x>466</x>
+       <y>62</y>
+       <width>16</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>h</string>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QTabWidget" name="tabWidget">
+    <property name="geometry">
+     <rect>
+      <x>11</x>
+      <y>204</y>
+      <width>601</width>
+      <height>385</height>
+     </rect>
+    </property>
+    <property name="currentIndex">
+     <number>0</number>
+    </property>
+    <widget class="QWidget" name="tab">
+     <attribute name="title">
+      <string>Worktime</string>
+     </attribute>
+     <widget class="QLabel" name="label_8">
+      <property name="geometry">
+       <rect>
+        <x>212</x>
+        <y>4</y>
+        <width>111</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Activity</string>
+      </property>
+     </widget>
+     <widget class="QListView" name="listViewActions">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+      <property name="geometry">
+       <rect>
+        <x>211</x>
+        <y>23</y>
+        <width>178</width>
+        <height>154</height>
+       </rect>
+      </property>
+      <property name="editTriggers">
+       <set>QAbstractItemView::NoEditTriggers</set>
+      </property>
+      <property name="showDropIndicator" stdset="0">
+       <bool>true</bool>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_7">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>4</y>
+        <width>67</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Workdays</string>
+      </property>
+     </widget>
+     <widget class="QListView" name="listViewWorkingDays">
+      <property name="geometry">
+       <rect>
+        <x>9</x>
+        <y>23</y>
+        <width>195</width>
+        <height>272</height>
+       </rect>
+      </property>
+      <property name="editTriggers">
+       <set>QAbstractItemView::NoEditTriggers</set>
+      </property>
+      <property name="alternatingRowColors">
+       <bool>true</bool>
+      </property>
+     </widget>
+     <widget class="QListView" name="listViewWorktimes">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+      <property name="geometry">
+       <rect>
+        <x>396</x>
+        <y>23</y>
+        <width>193</width>
+        <height>201</height>
+       </rect>
+      </property>
+      <property name="editTriggers">
+       <set>QAbstractItemView::NoEditTriggers</set>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButtonAddWorktime">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+      <property name="geometry">
+       <rect>
+        <x>394</x>
+        <y>222</y>
+        <width>51</width>
+        <height>32</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>+</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButtonRemoveWorktime">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+      <property name="geometry">
+       <rect>
+        <x>446</x>
+        <y>222</y>
+        <width>51</width>
+        <height>32</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>-</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_10">
+      <property name="geometry">
+       <rect>
+        <x>397</x>
+        <y>2</y>
+        <width>171</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Worktime</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButtonUpdateWorkdays">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>298</y>
+        <width>193</width>
+        <height>32</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Update</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="labelWorkdaysMonth">
+      <property name="geometry">
+       <rect>
+        <x>92</x>
+        <y>4</y>
+        <width>109</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>...</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButtonCreateSpreadsheet">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>325</y>
+        <width>193</width>
+        <height>32</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Let the magic happen!</string>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="tab_2">
+     <attribute name="title">
+      <string>OCD</string>
+     </attribute>
+     <widget class="QPushButton" name="pushButtonRemoveOCD">
+      <property name="geometry">
+       <rect>
+        <x>61</x>
+        <y>224</y>
+        <width>51</width>
+        <height>32</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>-</string>
+      </property>
+     </widget>
+     <widget class="QListView" name="listViewOCD">
+      <property name="geometry">
+       <rect>
+        <x>9</x>
+        <y>23</y>
+        <width>575</width>
+        <height>202</height>
+       </rect>
+      </property>
+      <property name="editTriggers">
+       <set>QAbstractItemView::NoEditTriggers</set>
+      </property>
+      <property name="alternatingRowColors">
+       <bool>true</bool>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButtonAddOCD">
+      <property name="geometry">
+       <rect>
+        <x>9</x>
+        <y>224</y>
+        <width>51</width>
+        <height>32</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>+</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_9">
+      <property name="geometry">
+       <rect>
+        <x>12</x>
+        <y>4</y>
+        <width>171</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>OCD</string>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="Usuals">
+     <attribute name="title">
+      <string>Usual Times</string>
+     </attribute>
+     <widget class="QListView" name="listViewUsualWeekdays">
+      <property name="geometry">
+       <rect>
+        <x>9</x>
+        <y>23</y>
+        <width>195</width>
+        <height>202</height>
+       </rect>
+      </property>
+      <property name="editTriggers">
+       <set>QAbstractItemView::NoEditTriggers</set>
+      </property>
+      <property name="alternatingRowColors">
+       <bool>true</bool>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_11">
+      <property name="geometry">
+       <rect>
+        <x>12</x>
+        <y>4</y>
+        <width>171</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Weekdays</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButtonAddWorktimeUsual">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+      <property name="geometry">
+       <rect>
+        <x>210</x>
+        <y>224</y>
+        <width>51</width>
+        <height>32</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>+</string>
+      </property>
+     </widget>
+     <widget class="QListView" name="listViewWorktimeUsual">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+      <property name="geometry">
+       <rect>
+        <x>211</x>
+        <y>23</y>
+        <width>195</width>
+        <height>202</height>
+       </rect>
+      </property>
+      <property name="editTriggers">
+       <set>QAbstractItemView::NoEditTriggers</set>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_12">
+      <property name="geometry">
+       <rect>
+        <x>213</x>
+        <y>4</y>
+        <width>171</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Times</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButtonRemoveWorktimeUsual">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+      <property name="geometry">
+       <rect>
+        <x>262</x>
+        <y>224</y>
+        <width>51</width>
+        <height>32</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>-</string>
+      </property>
+     </widget>
+    </widget>
+   </widget>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>626</width>
+     <height>24</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
