@@ -45,6 +45,15 @@ class WeekdayUsualsList(QAbstractListModel):
             self._work_times[self._weekday] = list()
         self.endResetModel()
 
+    def get_total(self):
+        total_seconds = 0
+        for t in self._work_times[self._weekday]:
+            delta = t["start"].secsTo(t["end"])
+            total_seconds += delta
+        hours, remainder = divmod(total_seconds, 3600)
+        minutes, _ = divmod(remainder, 60)
+        return f"{int(hours):02}:{int(minutes):02}"
+
     def __iter__(self):
         return iter(self._work_times[self._weekday])
 
@@ -409,6 +418,7 @@ class MainWindow(QMainWindow):
         self.labelWorkdaysMonth = self.findChild(QLabel, "labelWorkdaysMonth")
         self.spinBoxBalanceHours = self.findChild(QSpinBox, "spinBoxBalanceHours")
         self.spinBoxBalanceMinutes = self.findChild(QSpinBox, "spinBoxBalanceMinutes")
+        self.labelUsualTotalTime = self.findChild(QLabel, "labelUsualTotalTime")
 
         # Create models
         self.absence_items = QStringListModel(ACTIONS)
@@ -745,6 +755,8 @@ class MainWindow(QMainWindow):
             self.pushButtonAddWorktimeUsual.setEnabled(True)
             self.pushButtonRemoveWorktimeUsual.setEnabled(True)
             self.usualsModel.set_weekday(index)
+            total_str = self.usualsModel.get_total()
+            self.labelUsualTotalTime.setText(total_str)
             print(WEEKDAYS[index])
 
     def createSpreadsheet(self):
