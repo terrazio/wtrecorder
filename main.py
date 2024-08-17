@@ -47,9 +47,10 @@ class WeekdayUsualsList(QAbstractListModel):
 
     def get_total(self):
         total_seconds = 0
-        for t in self._work_times[self._weekday]:
-            delta = t["start"].secsTo(t["end"])
-            total_seconds += delta
+        if self._weekday is not None:
+            for t in self._work_times[self._weekday]:
+                delta = t["start"].secsTo(t["end"])
+                total_seconds += delta
         hours, remainder = divmod(total_seconds, 3600)
         minutes, _ = divmod(remainder, 60)
         return f"{int(hours):02}:{int(minutes):02}"
@@ -446,6 +447,10 @@ class MainWindow(QMainWindow):
         self.listViewUsualWeekdays.setModel(weekday_items)
         self.listViewUsualWeekdays.selectionModel().selectionChanged.connect(self.usualsChanged)
 
+        self.usualsModel.modelReset.connect(self.usualsChanged1)
+        self.usualsModel.rowsInserted.connect(self.usualsChanged1)
+        self.usualsModel.rowsRemoved.connect(self.usualsChanged1)
+
         self.listViewWorktimes = self.findChild(QListView, "listViewWorktimes")
         self.listViewWorktimes.setModel(self.customWorktimesModel)
         self.listViewWorktimes.doubleClicked.connect(self.editWorktime)
@@ -747,6 +752,10 @@ class MainWindow(QMainWindow):
             print(f"Removing worktime {row}")
             self.listViewWorktimes.model().removeRow(row)
 
+    def usualsChanged1(self):
+        total_str = self.usualsModel.get_total()
+        self.labelUsualTotalTime.setText(total_str)
+        print("usualsChanged1")
 
     def usualsChanged(self, selected_item, deselected_item):
         if selected_item.indexes():
@@ -755,8 +764,6 @@ class MainWindow(QMainWindow):
             self.pushButtonAddWorktimeUsual.setEnabled(True)
             self.pushButtonRemoveWorktimeUsual.setEnabled(True)
             self.usualsModel.set_weekday(index)
-            total_str = self.usualsModel.get_total()
-            self.labelUsualTotalTime.setText(total_str)
             print(WEEKDAYS[index])
 
     def createSpreadsheet(self):
