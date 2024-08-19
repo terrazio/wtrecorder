@@ -4,7 +4,8 @@ import glob
 import json
 from calendar import monthrange
 import xlwings as xw
-from xlwings.constants import FindLookIn, LookAt, SearchDirection, SearchOrder
+import random
+import copy
 from PyQt6 import uic
 from PyQt6.QtCore import QSettings, QStringListModel, QAbstractListModel, QModelIndex, Qt, QDateTime, QTime, \
     QItemSelectionModel, QDate, QSignalBlocker
@@ -51,9 +52,8 @@ class WeekdayUsualsList(QAbstractListModel):
             for t in self._work_times[self._weekday]:
                 delta = t["start"].secsTo(t["end"])
                 total_seconds += delta
-        hours, remainder = divmod(total_seconds, 3600)
-        minutes, _ = divmod(remainder, 60)
-        return f"{int(hours):02}:{int(minutes):02}"
+        return total_seconds
+
 
     def __iter__(self):
         return iter(self._work_times[self._weekday])
@@ -158,22 +158,20 @@ class WorktimeListModel(QAbstractListModel):
 
     def data(self, index, role):
         if 0 <= index.row() < len(self._work_times):
-            #print(index.row(), len(self._work_times))
             data = self._work_times[index.row()]
             if role == Qt.ItemDataRole.ToolTipRole or role == Qt.ItemDataRole.DisplayRole:
-                return f"{data["start"].toString('HH:mm')} - {data["end"].toString('HH:mm')}: {WORKTYPES[data["type"]]}"
+                return f"{data["start"].toString('HH:mm')} - {data["end"].toString('HH:mm')} {WORKTYPES[data["type"]]}"
             elif role == Qt.ItemDataRole.UserRole:
                 return data
         else:
             print("Something went wrong")
 
-    # def resetData(self, new_data=None):
-    #     self.beginResetModel()
-    #     if new_data is not None:
-    #         self._work_times = list()
-    #     else:
-    #         self._work_times = new_data
-    #     self.endResetModel()
+    def get_total(self):
+        total_seconds = 0
+        for t in self._work_times:
+            delta = t["start"].secsTo(t["end"])
+            total_seconds += delta
+        return total_seconds
 
     def removeRow(self, index):
         self.beginRemoveRows(QModelIndex(), index, index)
@@ -326,6 +324,9 @@ class Workdays(QAbstractListModel):
     def find(self, day_of_month):
         return next((item for item in self._workdays if item["dayOfMonth"] == day_of_month), None)
 
+    def numberOfUsuals(self):
+        return sum(1 for item in self._workdays if item["action"] == 0)
+
     def getData(self):
         items = [
             {
@@ -401,6 +402,34 @@ class OnCallDutyDialog(QDialog):
         if validInput:
             self.done(1)  # Only accept the dialog if all inputs are valid
 
+
+def distribute_minutes(size, total_min, total_max, max_value):
+    if total_min > total_max:
+        raise ValueError("total_min cannot be greater than total_max.")
+
+    total = random.randint(total_min, total_max)
+    print(f"total: {total}")
+
+    if size * max_value < total:
+        raise ValueError("It's not possible to distribute the total minutes within working days")
+
+    result = [0] * size
+
+    for i in range(size):
+        # Calculate the max possible value to ensure total isn't exceeded
+        max_val = min(max_value, total - sum(result) - (size - i - 1))
+        if max_val > 0:
+            result[i] = random.randint(0, max_val)
+
+    # Adjust the final list to ensure the sum equals total
+    while sum(result) != total:
+        diff = total - sum(result)
+        index = random.randint(0, size - 1)
+        adjustment = min(diff, max_value - result[index])
+        result[index] += adjustment
+
+    return result
+
 class MainWindow(QMainWindow):
 
     def __init__(self,parent=None):
@@ -420,6 +449,11 @@ class MainWindow(QMainWindow):
         self.spinBoxBalanceHours = self.findChild(QSpinBox, "spinBoxBalanceHours")
         self.spinBoxBalanceMinutes = self.findChild(QSpinBox, "spinBoxBalanceMinutes")
         self.labelUsualTotalTime = self.findChild(QLabel, "labelUsualTotalTime")
+        self.labelTotalTime = self.findChild(QLabel, "labelTotalTime")
+        self.spinBoxRandomizeMornings = self.findChild(QSpinBox, "spinBoxRandomizeMornings")
+        self.spinBoxTotalMin = self.findChild(QSpinBox, "spinBoxTotalMin")
+        self.spinBoxTotalMax = self.findChild(QSpinBox, "spinBoxTotalMax")
+        self.spinBoxMaxPerDay = self.findChild(QSpinBox, "spinBoxMaxPerDay")
 
         # Create models
         self.absence_items = QStringListModel(ACTIONS)
@@ -427,6 +461,7 @@ class MainWindow(QMainWindow):
         self.customWorktimesModel = WorktimeListModel()  # useless?
         self.usualsModel = WeekdayUsualsList()
         self.ocdModel = OnCallDutyList()
+        self.workDaysModel = None
 
         # Load resources, settings, etc
         self.loadSettings()
@@ -447,9 +482,9 @@ class MainWindow(QMainWindow):
         self.listViewUsualWeekdays.setModel(weekday_items)
         self.listViewUsualWeekdays.selectionModel().selectionChanged.connect(self.usualsChanged)
 
-        self.usualsModel.modelReset.connect(self.usualsChanged1)
-        self.usualsModel.rowsInserted.connect(self.usualsChanged1)
-        self.usualsModel.rowsRemoved.connect(self.usualsChanged1)
+        self.usualsModel.modelReset.connect(self.updateUsualsTotal)
+        self.usualsModel.rowsInserted.connect(self.updateUsualsTotal)
+        self.usualsModel.rowsRemoved.connect(self.updateUsualsTotal)
 
         self.listViewWorktimes = self.findChild(QListView, "listViewWorktimes")
         self.listViewWorktimes.setModel(self.customWorktimesModel)
@@ -530,6 +565,11 @@ class MainWindow(QMainWindow):
         self.settings.setValue("targetMonth", self.targetMonthSpin.value())
         self.settings.setValue("targetYear", self.targetYearSpin.value())
         self.settings.setValue("workingPath", self.workingPathEdit.text())
+        self.settings.setValue("randomizeMornings", self.spinBoxRandomizeMornings.value())
+        self.settings.setValue("totalMin", self.spinBoxTotalMin.value())
+        self.settings.setValue("totalMax", self.spinBoxTotalMax.value())
+        self.settings.setValue("maxPerDay", self.spinBoxMaxPerDay.value())
+
 
     def loadSettings(self):
         self.settings = QSettings("./Settings.ini", QSettings.Format.IniFormat)
@@ -541,6 +581,12 @@ class MainWindow(QMainWindow):
             self.targetMonthSpin.setValue(self.settings.value("targetMonth", 9, type=int))
             self.targetYearSpin.setValue(self.settings.value("targetYear", 2024, type=int))
             self.workingPathEdit.setText(self.settings.value("workingPath", "", type=str))
+
+            self.spinBoxRandomizeMornings.setValue(self.settings.value("randomizeMornings", 0, type=int))
+            self.spinBoxTotalMin.setValue(self.settings.value("totalMin", 0, type=int))
+            self.spinBoxTotalMax.setValue(self.settings.value("totalMax", 0, type=int))
+            self.spinBoxMaxPerDay.setValue(self.settings.value("maxPerDay", 0, type=int))
+
         except:
             pass
 
@@ -696,10 +742,16 @@ class MainWindow(QMainWindow):
             # action list view
             self.listViewActions.setEnabled(True)
             self.listViewActions.selectionModel().clear()
-            self.listViewActions.selectionModel().setCurrentIndex(self.absence_items.index(item["action"]), QItemSelectionModel.SelectionFlag.Select)
+
             # worktimes list view
             self.listViewWorktimes.setModel(item["worktimes"])
+            self.listViewWorktimes.model().modelReset.connect(self.updateTotal)
+            self.listViewWorktimes.model().rowsInserted.connect(self.updateTotal)
+            self.listViewWorktimes.model().rowsRemoved.connect(self.updateTotal)
             self.customWorktimesModel = item["worktimes"]
+
+            self.listViewActions.selectionModel().setCurrentIndex(self.absence_items.index(item["action"]),
+                                                          QItemSelectionModel.SelectionFlag.Select)
 
 
     def actionChanged(self, selected_item, deselected_item):
@@ -711,30 +763,37 @@ class MainWindow(QMainWindow):
                 self.listViewWorktimes.setEnabled(False)
                 self.pushButtonAddWorktime.setEnabled(False)
                 self.pushButtonRemoveWorktime.setEnabled(False)
+                self.labelTotalTime.setText("00:00")
             elif action_row == 1:
                 self.listViewWorktimes.setEnabled(True)
                 self.pushButtonAddWorktime.setEnabled(True)
                 self.pushButtonRemoveWorktime.setEnabled(True)
+                self.updateTotal()
             elif action_row == 2:
                 self.listViewWorktimes.setEnabled(False)
                 self.pushButtonAddWorktime.setEnabled(False)
                 self.pushButtonRemoveWorktime.setEnabled(False)
+                self.labelTotalTime.setText("00:00")
             elif action_row == 3:
                 self.listViewWorktimes.setEnabled(True)
                 self.pushButtonAddWorktime.setEnabled(True)
                 self.pushButtonRemoveWorktime.setEnabled(True)
+                self.updateTotal()
             elif action_row == 4:
                 self.listViewWorktimes.setEnabled(False)
                 self.pushButtonAddWorktime.setEnabled(False)
                 self.pushButtonRemoveWorktime.setEnabled(False)
+                self.labelTotalTime.setText("00:00")
             elif action_row == 5:
                 self.listViewWorktimes.setEnabled(True)
                 self.pushButtonAddWorktime.setEnabled(True)
                 self.pushButtonRemoveWorktime.setEnabled(True)
+                self.updateTotal()
             elif action_row == 6:
                 self.listViewWorktimes.setEnabled(True)
                 self.pushButtonAddWorktime.setEnabled(True)
                 self.pushButtonRemoveWorktime.setEnabled(True)
+                self.updateTotal()
 
     def addWorktime(self):
         dialog = WorkTimeDialog(self)
@@ -744,6 +803,11 @@ class MainWindow(QMainWindow):
         else:
             print("Adding work time cancelled")
 
+    def applyBalance(self):
+        addition_per_day = int(self.spinBoxTargetBalanceHours.value() / self.workDaysModel.rowCount())
+        print(f"{self.spinBoxTargetBalanceHours.value()} {self.workDaysModel.rowCount()}")
+
+
     def removeWorktime(self):
         reply = QMessageBox.question(self, "Message", "Really remove selected worktime?",
                     QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No, QMessageBox.StandardButton.Yes)
@@ -752,10 +816,19 @@ class MainWindow(QMainWindow):
             print(f"Removing worktime {row}")
             self.listViewWorktimes.model().removeRow(row)
 
-    def usualsChanged1(self):
-        total_str = self.usualsModel.get_total()
-        self.labelUsualTotalTime.setText(total_str)
-        print("usualsChanged1")
+    def updateUsualsTotal(self):
+        total_seconds = self.usualsModel.get_total()
+        hours, remainder = divmod(total_seconds, 3600)
+        minutes, _ = divmod(remainder, 60)
+        self.labelUsualTotalTime.setText(f"{int(hours):02}:{int(minutes):02}")
+        print("updateUsualsTotal")
+
+    def updateTotal(self):
+        total_seconds = self.customWorktimesModel.get_total()
+        hours, remainder = divmod(total_seconds, 3600)
+        minutes, _ = divmod(remainder, 60)
+        self.labelTotalTime.setText(f"{int(hours):02}:{int(minutes):02}")
+        print("updateTotal")
 
     def usualsChanged(self, selected_item, deselected_item):
         if selected_item.indexes():
@@ -766,11 +839,16 @@ class MainWindow(QMainWindow):
             self.usualsModel.set_weekday(index)
             print(WEEKDAYS[index])
 
+
+
     def createSpreadsheet(self):
+        if self.workDaysModel is None:
+            QMessageBox.information(None, "Warning!", "Update to get workdays!")
+            return
         search_pattern = os.path.join(self.workingPathEdit.text(), 'LastName_FirstName_*.xlsx')
         matching_files = glob.glob(search_pattern)
         if len(matching_files) != 1:
-            print("No templates found")  # write in status bar
+            QMessageBox.information(None, "Warning!", "No templates found")
             return
         template_file = matching_files[0]
         try:
@@ -787,6 +865,13 @@ class MainWindow(QMainWindow):
             worksheet_profile.range('C3').value = f'{self.firstNameEdit.text()} {self.lastNameEdit.text()}'
             worksheet_profile.range('C4').value = self.groupNameEdit.text()
 
+            usual_days_count = self.workDaysModel.numberOfUsuals()
+            if self.spinBoxMaxPerDay.value() > 0:
+                distributed_minutes = distribute_minutes(usual_days_count, self.spinBoxTotalMin.value(), self.spinBoxTotalMax.value(), self.spinBoxMaxPerDay.value())
+                print(distributed_minutes)
+            else:
+                distributed_minutes = None
+
             # iterate through all days in target month
             month_tuple = monthrange(self.targetYearSpin.value(), self.targetMonthSpin.value())
             days_in_month = month_tuple[1]
@@ -802,7 +887,21 @@ class MainWindow(QMainWindow):
                     else:
                         if action == 0:  # usuals
                             day_of_week_index = WEEKDAYS.index(workday["dayOfWeek"])
-                            usuals = self.usualsModel.find(day_of_week_index)
+                            usuals_original = self.usualsModel.find(day_of_week_index)
+                            usuals = copy.deepcopy(usuals_original)
+
+                            # randomize morning time
+                            if self.spinBoxRandomizeMornings.value() > 0:
+                                morning_addition = random.randint(0, self.spinBoxRandomizeMornings.value())
+                                usuals[0]["start"] = usuals[0]["start"].addSecs(morning_addition)
+                                print(f"morning addition for day {day_of_month}: {int(morning_addition/60)}")
+
+                            # add some more hours
+                            if distributed_minutes is not None:
+                                eod_addition = distributed_minutes.pop() * 60
+                                usuals[-1]["end"] = usuals[-1]["end"].addSecs(eod_addition)
+                                print(f"eod addition for day {day_of_month}: {int(eod_addition/60)}")
+
                             for u in usuals:
                                 worksheet_time.range(f'{WORKTIME_TYPE_COL}{worktime_row}').value = WORKTYPES[u['type']]
                                 worksheet_time.range(f'{WORKTIME_START_DAY_COL}{worktime_row}').value = day_of_month
@@ -858,7 +957,6 @@ class MainWindow(QMainWindow):
 
         except Exception as e:
             QMessageBox.critical(None, "Error reading template", str(e))
-            raise e
 
     def updateWorkdays(self):
         search_pattern = os.path.join(self.workingPathEdit.text(), 'LastName_FirstName_*.xlsx')
@@ -894,7 +992,6 @@ class MainWindow(QMainWindow):
             app.kill()
         except Exception as e:
             QMessageBox.critical(None, "Error reading template", str(e))
-            raise e
 
 
 
