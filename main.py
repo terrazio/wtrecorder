@@ -322,7 +322,7 @@ class Workdays(QAbstractListModel):
     def data(self, index, role):
         day = self._workdays[index.row()]
         if role == Qt.ItemDataRole.ToolTipRole or role == Qt.ItemDataRole.DisplayRole:
-            return f"{day["dayOfMonth"]}\t{day["dayOfWeek"]}"
+            return f"{day['dayOfMonth']}\t{day['dayOfWeek']}"
         elif role == Qt.ItemDataRole.UserRole:
             return day
 
