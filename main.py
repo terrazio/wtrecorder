@@ -172,7 +172,7 @@ class WorktimeListModel(QAbstractListModel):
         if 0 <= index.row() < len(self._work_times):
             data = self._work_times[index.row()]
             if role == Qt.ItemDataRole.ToolTipRole or role == Qt.ItemDataRole.DisplayRole:
-                return f"{data["start"].toString('HH:mm')} - {data["end"].toString('HH:mm')} {WORKTYPES[data["type"]]}"
+                return f"{data['start'].toString('HH:mm')} - {data['end'].toString('HH:mm')} {WORKTYPES[data['type']]}"
             elif role == Qt.ItemDataRole.UserRole:
                 return data
         else:
