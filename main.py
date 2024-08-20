@@ -1014,6 +1014,7 @@ class MainWindow(QMainWindow):
 def main():
     app = QApplication(sys.argv)
     app.setApplicationName("wtr")
+    app.setApplicationVersion('1.0.0')
     main_window = MainWindow()
     main_window.show()
     app.exec()
