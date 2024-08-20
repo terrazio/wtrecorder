@@ -235,7 +235,7 @@ class OnCallDutyList(QAbstractListModel):
     def data(self, index, role):
         event = self._events[index.row()]
         if role == Qt.ItemDataRole.ToolTipRole or role == Qt.ItemDataRole.DisplayRole:
-            return f"{event["start"].toString('dd.MM HH:mm')} - {event["end"].toString('dd.MM HH:mm')}\t{event["comments"]}"
+            return f"{event['start'].toString('dd.MM HH:mm')} - {event['end'].toString('dd.MM HH:mm')}\t{event['comments']}"
         elif role == Qt.ItemDataRole.UserRole:
             return event
 
