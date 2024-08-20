@@ -8,7 +8,7 @@ import random
 import copy
 from PyQt6 import uic
 from PyQt6.QtCore import QSettings, QStringListModel, QAbstractListModel, QModelIndex, Qt, QDateTime, QTime, \
-    QItemSelectionModel, QDate, QSignalBlocker
+    QItemSelectionModel, QDate, QSignalBlocker, QStandardPaths
 from PyQt6.QtWidgets import (QMainWindow, QDialog ,QPushButton, QApplication, QTimeEdit,
                              QMessageBox, QLineEdit, QLabel, QComboBox, QDateTimeEdit,
                              QCheckBox, QFileDialog, QSpinBox, QFileDialog,
@@ -31,6 +31,18 @@ WEEKDAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
 WORKTYPES = ["Office Hours", "Remote Work", "Overtime (paid)", "Overtime (time compensated)"]
 ACTIONS = ["Working usual times", "Working custom times", "Vacation", "Half Day Vacation", "Sick", "Shift Compensation", "Flexible Time Compensation"]
 
+
+def resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+    try:
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
+
+def config_path(config_fn):
+    return os.path.join(QStandardPaths.writableLocation(QStandardPaths.StandardLocation.AppConfigLocation), config_fn)
 
 class WeekdayUsualsList(QAbstractListModel):
     def __init__(self, parent=None):
@@ -341,7 +353,7 @@ class WorkTimeDialog(QDialog):
     def __init__(self, parent=None, initialData=None):
         super(WorkTimeDialog, self).__init__(parent)
         # load ui
-        uic.loadUi("worktime.ui", self)
+        uic.loadUi(resource_path("worktime.ui"), self)
         self.startTimeEdit = self.findChild(QTimeEdit, "timeEditEventStart")
         self.endTimeEdit = self.findChild(QTimeEdit, "timeEditEventEnd")
         self.comboBoxWorkTypes = self.findChild(QComboBox, "comboBoxWorkTypes")
@@ -360,7 +372,7 @@ class OnCallDutyDialog(QDialog):
     def __init__(self, parent=None, initialData=None):
         super(OnCallDutyDialog, self).__init__(parent)
         # load ui
-        uic.loadUi("ocd.ui", self)
+        uic.loadUi(resource_path("ocd.ui"), self)
         self.startTimeEdit = self.findChild(QDateTimeEdit, "dateTimeEditEventStart")
         self.endTimeEdit = self.findChild(QDateTimeEdit, "dateTimeEditEventEnd")
         self.commentsEdit = self.findChild(QLineEdit, "lineEditComments")
@@ -434,7 +446,10 @@ class MainWindow(QMainWindow):
 
     def __init__(self,parent=None):
         super(MainWindow,self).__init__(parent)
-        uic.loadUi("wt.ui", self)
+        uic.loadUi(resource_path("wt.ui"), self)
+
+        if not os.path.isdir(QStandardPaths.writableLocation(QStandardPaths.StandardLocation.AppConfigLocation)):
+            os.mkdir(QStandardPaths.writableLocation(QStandardPaths.StandardLocation.AppConfigLocation))
 
         self.balance = {}
 
@@ -572,7 +587,7 @@ class MainWindow(QMainWindow):
 
 
     def loadSettings(self):
-        self.settings = QSettings("./Settings.ini", QSettings.Format.IniFormat)
+        self.settings = QSettings(config_path("Settings.ini"), QSettings.Format.IniFormat)
         try:
             print("Load settings...")
             self.firstNameEdit.setText(self.settings.value("firstName", "John", type=str))
@@ -591,11 +606,12 @@ class MainWindow(QMainWindow):
             pass
 
     def loadBalanceConfiguration(self):
-        if not os.path.isfile('balance.json'):
-            with open('balance.json', 'w') as f:
+        balance_config = config_path('balance.json')
+        if not os.path.isfile(balance_config):
+            with open(balance_config, 'w') as f:
                 json.dump(dict(), f)
         else:
-            with open('balance.json', 'r') as f:
+            with open(balance_config, 'r') as f:
                 self.balance = json.load(f)
             key = f"{self.targetMonthSpin.value()}.{self.targetYearSpin.value()}"
             if key in self.balance:
@@ -644,28 +660,28 @@ class MainWindow(QMainWindow):
 
     def saveWorktimes(self):
         try:
-            with open(f'worktimes-{self.current_target_month}-{self.current_target_year}.json', 'w') as f:
+            with open(config_path(f'worktimes-{self.current_target_month}-{self.current_target_year}.json'), 'w') as f:
                 json.dump(self.workDaysModel.getData(), f)
         except:
             print("Worktimes not saved...")
             pass
 
     def saveOCD(self):
-        with open(f'ocd-{self.targetMonthSpin.value()}-{self.targetYearSpin.value()}.json', 'w') as f:
+        with open(config_path(f'ocd-{self.targetMonthSpin.value()}-{self.targetYearSpin.value()}.json'), 'w') as f:
             json.dump(self.ocdModel.getEvents(), f)
         print("Saving OCD")
 
     def saveBalance(self):
-        with open('balance.json', 'w') as f:
+        with open(config_path('balance.json'), 'w') as f:
             json.dump(self.balance, f)
         print("Saving balance")
 
     def saveUsuals(self):
-        with open('usuals.json', 'w') as f:
+        with open(config_path('usuals.json'), 'w') as f:
             json.dump(self.usualsModel.getUsuals(), f)
 
     def loadOCD(self):
-        fn = f'ocd-{self.targetMonthSpin.value()}-{self.targetYearSpin.value()}.json'
+        fn = config_path(f'ocd-{self.targetMonthSpin.value()}-{self.targetYearSpin.value()}.json')
         print(fn)
         if os.path.isfile(fn):
             try:
@@ -680,13 +696,13 @@ class MainWindow(QMainWindow):
 
     def loadUsuals(self):
         try:
-            with open('usuals.json', 'r') as f:
+            with open(config_path('usuals.json'), 'r') as f:
                 self.usualsModel.setUsuals(json.load(f))
         except Exception:
             pass
 
     def loadWorktimes(self):
-        fn = f'worktimes-{self.targetMonthSpin.value()}-{self.targetYearSpin.value()}.json'
+        fn = config_path(f'worktimes-{self.targetMonthSpin.value()}-{self.targetYearSpin.value()}.json')
         if os.path.isfile(fn):
             try:
                 with open(fn, 'r') as f:
@@ -997,11 +1013,17 @@ class MainWindow(QMainWindow):
 
 def main():
     app = QApplication(sys.argv)
+    app.setApplicationName("wtr")
     main_window = MainWindow()
     main_window.show()
     app.exec()
 
 
 if __name__ == '__main__':
+    # dir_path = os.path.dirname(os.path.realpath(__file__))
+    # print(dir_path)
+    # input()
+    # print(QStandardPaths.writableLocation(QStandardPaths.StandardLocation.AppConfigLocation))
+    # print(config_path('balance.json'))
     main()
 
