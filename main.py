@@ -86,7 +86,7 @@ class WeekdayUsualsList(QAbstractListModel):
     def data(self, index, role):
         data = self._work_times[self._weekday][index.row()]
         if role == Qt.ItemDataRole.ToolTipRole or role == Qt.ItemDataRole.DisplayRole:
-            return f"{data["start"].toString('HH:mm')} - {data["end"].toString('HH:mm')} {WORKTYPES[data['type']]}"
+            return f"{data['start'].toString('HH:mm')} - {data['end'].toString('HH:mm')} {WORKTYPES[data['type']]}"
         elif role == Qt.ItemDataRole.UserRole:
             return data
 
