@@ -67,6 +67,9 @@
      <height>24</height>
     </rect>
    </property>
+   <property name="locale">
+    <locale language="English" country="Germany"/>
+   </property>
   </widget>
   <widget class="QTimeEdit" name="timeEditEventEnd">
    <property name="geometry">
@@ -76,6 +79,9 @@
      <width>92</width>
      <height>24</height>
     </rect>
+   </property>
+   <property name="locale">
+    <locale language="English" country="Germany"/>
    </property>
   </widget>
   <widget class="QComboBox" name="comboBoxWorkTypes">
