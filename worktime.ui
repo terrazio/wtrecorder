@@ -70,6 +70,9 @@
    <property name="locale">
     <locale language="English" country="Germany"/>
    </property>
+   <property name="displayFormat">
+    <string>HH:mm</string>
+   </property>
   </widget>
   <widget class="QTimeEdit" name="timeEditEventEnd">
    <property name="geometry">
@@ -82,6 +85,9 @@
    </property>
    <property name="locale">
     <locale language="English" country="Germany"/>
+   </property>
+   <property name="displayFormat">
+    <string>HH:mm</string>
    </property>
   </widget>
   <widget class="QComboBox" name="comboBoxWorkTypes">

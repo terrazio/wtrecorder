@@ -54,6 +54,9 @@
      <height>24</height>
     </rect>
    </property>
+   <property name="displayFormat">
+    <string>d.M.yyyy HH:mm</string>
+   </property>
   </widget>
   <widget class="QDateTimeEdit" name="dateTimeEditEventEnd">
    <property name="geometry">
@@ -63,6 +66,9 @@
      <width>140</width>
      <height>24</height>
     </rect>
+   </property>
+   <property name="displayFormat">
+    <string>d.M.yyyy HH:mm</string>
    </property>
   </widget>
   <widget class="QLabel" name="label_2">
