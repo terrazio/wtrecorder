@@ -967,9 +967,10 @@ class MainWindow(QMainWindow):
                     self.balance[key] = dict({"h": balance_h, "m": balance_m})
                     break
 
-            app = workbook.app
-            workbook.close()
-            app.kill()
+            workbook.app.quit()
+            # app = workbook.app
+            # workbook.close()
+            # app.kill()
 
         except Exception as e:
             QMessageBox.critical(None, "Error reading template", str(e))
@@ -1003,9 +1004,10 @@ class MainWindow(QMainWindow):
             self.current_target_month = self.targetMonthSpin.value()
             self.current_target_year = self.targetYearSpin.value()
 
-            app = workbook.app
-            workbook.close()
-            app.kill()
+            workbook.app.quit()
+            #app = workbook.app
+            #workbook.close()
+            #app.kill()
         except Exception as e:
             QMessageBox.critical(None, "Error reading template", str(e))
 
