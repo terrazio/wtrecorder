@@ -904,6 +904,8 @@ class MainWindow(QMainWindow):
                         if action == 0:  # usuals
                             day_of_week_index = WEEKDAYS.index(workday["dayOfWeek"])
                             usuals_original = self.usualsModel.find(day_of_week_index)
+                            if len(usuals_original) == 0:
+                                raise Exception(f"No usuals found for {workday["dayOfWeek"]}, terminating process")
                             usuals = copy.deepcopy(usuals_original)
 
                             # randomize morning time
