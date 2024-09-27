@@ -2,3 +2,4 @@
 *.ini
 build/
 dist/
+.idea/
