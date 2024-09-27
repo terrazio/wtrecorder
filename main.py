@@ -891,7 +891,7 @@ class MainWindow(QMainWindow):
             # iterate through all days in target month
             month_tuple = monthrange(self.targetYearSpin.value(), self.targetMonthSpin.value())
             days_in_month = month_tuple[1]
-            worktime_row = WORKTIME_STARTING_ROW
+            temp_objects = []
             for day_of_month in range(1, days_in_month + 1):
                 # try to find the day in workdays
                 workday = self.workDaysModel.find(day_of_month)
@@ -910,7 +910,7 @@ class MainWindow(QMainWindow):
 
                             # randomize morning time
                             if self.spinBoxRandomizeMornings.value() > 0:
-                                morning_addition = random.randint(0, self.spinBoxRandomizeMornings.value())
+                                morning_addition = random.randint(0, self.spinBoxRandomizeMornings.value() * 60)
                                 usuals[0]["start"] = usuals[0]["start"].addSecs(morning_addition)
                                 print(f"morning addition for day {day_of_month}: {int(morning_addition/60)}")
 
@@ -921,33 +921,52 @@ class MainWindow(QMainWindow):
                                 print(f"eod addition for day {day_of_month}: {int(eod_addition/60)}")
 
                             for u in usuals:
-                                worksheet_time.range(f'{WORKTIME_TYPE_COL}{worktime_row}').value = WORKTYPES[u['type']]
-                                worksheet_time.range(f'{WORKTIME_START_DAY_COL}{worktime_row}').value = day_of_month
-                                worksheet_time.range(f'{WORKTIME_END_DAY_COL}{worktime_row}').value = day_of_month
-                                worksheet_time.range(f'{WORKTIME_START_TIME_COL}{worktime_row}').value = u['start'].toString("HH:mm")
-                                worksheet_time.range(f'{WORKTIME_END_TIME_COL}{worktime_row}').value = u['end'].toString("HH:mm")
-                                worktime_row += 1
+                                temp_objects.append({'type':WORKTYPES[u['type']], 'start_day':day_of_month, 'start_time':u['start'], 'end_day':day_of_month, 'end_time':u['end']})
+                                # worksheet_time.range(f'{WORKTIME_TYPE_COL}{worktime_row}').value = WORKTYPES[u['type']]
+                                # worksheet_time.range(f'{WORKTIME_START_DAY_COL}{worktime_row}').value = day_of_month
+                                # worksheet_time.range(f'{WORKTIME_END_DAY_COL}{worktime_row}').value = day_of_month
+                                # worksheet_time.range(f'{WORKTIME_START_TIME_COL}{worktime_row}').value = u['start'].toString("HH:mm")
+                                # worksheet_time.range(f'{WORKTIME_END_TIME_COL}{worktime_row}').value = u['end'].toString("HH:mm")
+                                # worktime_row += 1
                         else:  # custom times
                             custom_times = workday["worktimes"].getWorkTimes()
                             for c in custom_times:
-                                worksheet_time.range(f'{WORKTIME_TYPE_COL}{worktime_row}').value = WORKTYPES[c['type']]
-                                worksheet_time.range(f'{WORKTIME_START_DAY_COL}{worktime_row}').value = day_of_month
-                                worksheet_time.range(f'{WORKTIME_END_DAY_COL}{worktime_row}').value = day_of_month
-                                worksheet_time.range(f'{WORKTIME_START_TIME_COL}{worktime_row}').value = c['start'].toString("HH:mm")
-                                worksheet_time.range(f'{WORKTIME_END_TIME_COL}{worktime_row}').value = c['end'].toString("HH:mm")
-                                worktime_row += 1
+                                temp_objects.append(
+                                    {'type': WORKTYPES[c['type']], 'start_day': day_of_month, 'start_time': c['start'],
+                                     'end_day': day_of_month, 'end_time': c['end']})
+                                # worksheet_time.range(f'{WORKTIME_TYPE_COL}{worktime_row}').value = WORKTYPES[c['type']]
+                                # worksheet_time.range(f'{WORKTIME_START_DAY_COL}{worktime_row}').value = day_of_month
+                                # worksheet_time.range(f'{WORKTIME_END_DAY_COL}{worktime_row}').value = day_of_month
+                                # worksheet_time.range(f'{WORKTIME_START_TIME_COL}{worktime_row}').value = c['start'].toString("HH:mm")
+                                # worksheet_time.range(f'{WORKTIME_END_TIME_COL}{worktime_row}').value = c['end'].toString("HH:mm")
+                                # worktime_row += 1
 
-                # check if there is OCD on that day
+                # check if there is OCD on that day... make sure to sort it
                 ocd = self.ocdModel.find(day_of_month)
                 if ocd is not None:
                     for o in ocd:
-                        worksheet_time.range(f'{WORKTIME_TYPE_COL}{worktime_row}').value = 'OCD'
-                        worksheet_time.range(f'{WORKTIME_START_DAY_COL}{worktime_row}').value = o["start"].date().day()
-                        worksheet_time.range(f'{WORKTIME_END_DAY_COL}{worktime_row}').value = o["end"].date().day()
-                        worksheet_time.range(f'{WORKTIME_START_TIME_COL}{worktime_row}').value = o["start"].time().toString("HH:mm")
-                        worksheet_time.range(f'{WORKTIME_END_TIME_COL}{worktime_row}').value = o["end"].time().toString("HH:mm")
-                        worksheet_time.range(f'{WORKTIME_COMMENTS_COL}{worktime_row}').value = o["comments"]
-                        worktime_row += 1
+                        temp_objects.append(
+                            {'type': 'OCD', 'start_day': o["start"].date().day(), 'start_time': o["start"].time(),
+                             'end_day': o["end"].date().day(), 'end_time': o["end"].time()})
+                        # worksheet_time.range(f'{WORKTIME_TYPE_COL}{worktime_row}').value = 'OCD'
+                        # worksheet_time.range(f'{WORKTIME_START_DAY_COL}{worktime_row}').value = o["start"].date().day()
+                        # worksheet_time.range(f'{WORKTIME_END_DAY_COL}{worktime_row}').value = o["end"].date().day()
+                        # worksheet_time.range(f'{WORKTIME_START_TIME_COL}{worktime_row}').value = o["start"].time().toString("HH:mm")
+                        # worksheet_time.range(f'{WORKTIME_END_TIME_COL}{worktime_row}').value = o["end"].time().toString("HH:mm")
+                        # worksheet_time.range(f'{WORKTIME_COMMENTS_COL}{worktime_row}').value = o["comments"]
+                        # worktime_row += 1
+
+            # write into file
+            temp_objects = sorted(temp_objects, key=lambda o: (o["start_day"], o["start_time"]))
+
+            worktime_row = WORKTIME_STARTING_ROW
+            for d in temp_objects:
+                worksheet_time.range(f'{WORKTIME_TYPE_COL}{worktime_row}').value = d["type"]
+                worksheet_time.range(f'{WORKTIME_START_DAY_COL}{worktime_row}').value = d["start_day"]
+                worksheet_time.range(f'{WORKTIME_END_DAY_COL}{worktime_row}').value = d["end_day"]
+                worksheet_time.range(f'{WORKTIME_START_TIME_COL}{worktime_row}').value = d["start_time"].toString("HH:mm")
+                worksheet_time.range(f'{WORKTIME_END_TIME_COL}{worktime_row}').value = d["end_time"].toString("HH:mm")
+                worktime_row += 1
 
             # Save the workbook with a new name
             fn = f'{self.lastNameEdit.text()}_{self.firstNameEdit.text()}_WorkTimeRecord_{self.targetYearSpin.value()}-{self.targetMonthSpin.value():02}.xlsx'
