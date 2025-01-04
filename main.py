@@ -876,6 +876,11 @@ class MainWindow(QMainWindow):
 
             # Change the target month
             worksheet_plan.range('C5').value = self.targetMonthSpin.value()
+            worksheet_plan.range('C6').value = self.targetYearSpin.value()
+
+            # Write Balance
+            worksheet_plan.range('E10').value = self.spinBoxBalanceHours.value()
+            worksheet_plan.range('G10').value = self.spinBoxBalanceMinutes.value()
 
             # Profile
             worksheet_profile.range('C3').value = f'{self.firstNameEdit.text()} {self.lastNameEdit.text()}'
