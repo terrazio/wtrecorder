@@ -1006,8 +1006,9 @@ class MainWindow(QMainWindow):
         try:
             workbook = xw.Book(template_file)
             worksheet_plan = workbook.sheets['Monthly Plan and Absences']
-            # Change the target month
+            # Change the target month and year
             worksheet_plan.range('C5').value = self.targetMonthSpin.value()
+            worksheet_plan.range('C6').value = self.targetYearSpin.value()
             working_days = []
             for row in range(PLAN_STARTING_ROW, PLAN_STARTING_ROW + 31):
                 day_type = worksheet_plan.range(f'{PLAN_DAYTYPE_COL}{row}').value
