@@ -10,3 +10,5 @@ dist/
 .idea/jsLibraryMappings.xml
 
 *.iws
+/.idea/easycode/codebase-v2.xml
+/.idea/easycode.ignore

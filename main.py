@@ -29,7 +29,7 @@ WORKTIME_COMMENTS_COL = 'J'
 WORKTIME_STARTING_ROW = 10
 WEEKDAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
 WORKTYPES = ["Office Hours", "Remote Work", "Overtime (paid)", "Overtime (time compensated)"]
-ACTIONS = ["Working usual times", "Working custom times", "Vacation", "Half Day Vacation", "Sick", "Shift Compensation", "Flexible Time Compensation"]
+ACTIONS = ["Working usual times", "Working custom times", "Vacation", "Half Day Vacation", "Sick", "Shift Compensation", "Flexible Time Comp."]
 
 
 def resource_path(relative_path):
