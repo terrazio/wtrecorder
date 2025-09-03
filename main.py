@@ -29,7 +29,11 @@ WORKTIME_COMMENTS_COL = 'J'
 WORKTIME_STARTING_ROW = 10
 WEEKDAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
 WORKTYPES = ["Office Hours", "Remote Work", "Overtime (paid)", "Overtime (time compensated)"]
+
 ACTIONS = ["Working usual times", "Working custom times", "Vacation", "Half Day Vacation", "Sick", "Shift Compensation", "Flexible Time Comp."]
+
+# Jitter config (± minutes) applied to all usual worktime items
+RANDOM_OFFSET_MINUTES = 30
 
 
 def resource_path(relative_path):
@@ -43,6 +47,19 @@ def resource_path(relative_path):
 
 def config_path(config_fn):
     return os.path.join(QStandardPaths.writableLocation(QStandardPaths.StandardLocation.AppConfigLocation), config_fn)
+
+
+# Helper to clamp QTime within valid day range (00:00..23:59)
+def clamp_qtime(t: QTime) -> QTime:
+    """Clamp QTime to the range 00:00..23:59 to avoid wrapping across days when applying offsets."""
+    base = QTime(0, 0)
+    secs = base.secsTo(t)
+    if secs < 0:
+        secs = 0
+    max_secs = 23 * 3600 + 59 * 60
+    if secs > max_secs:
+        secs = max_secs
+    return base.addSecs(secs)
 
 class WeekdayUsualsList(QAbstractListModel):
     def __init__(self, parent=None):
@@ -913,11 +930,31 @@ class MainWindow(QMainWindow):
                                 raise Exception(f"No usuals found for {workday['dayOfWeek']}, terminating process")
                             usuals = copy.deepcopy(usuals_original)
 
-                            # randomize morning time
-                            if self.spinBoxRandomizeMornings.value() > 0:
-                                morning_addition = random.randint(0, self.spinBoxRandomizeMornings.value() * 60)
-                                usuals[0]["start"] = usuals[0]["start"].addSecs(morning_addition)
-                                print(f"morning addition for day {day_of_month}: {int(morning_addition/60)}")
+                            # randomize all usual intervals together by a single ±RANDOM_OFFSET_MINUTES delta
+                            # choose a delta that keeps ALL intervals within 00:00..23:59 *without clamping*,
+                            # thereby preserving both durations (>= usuals) and gaps (no overlaps introduced)
+                            if RANDOM_OFFSET_MINUTES > 0:
+                                J = RANDOM_OFFSET_MINUTES * 60
+                                base = QTime(0, 0)
+                                max_secs = 23 * 3600 + 59 * 60
+                                # Collect starts/ends in seconds-from-midnight
+                                starts = [base.secsTo(u["start"]) for u in usuals]
+                                ends   = [base.secsTo(u["end"])   for u in usuals]
+                                # Feasible delta so that start >= 0 and end <= max_secs for ALL intervals
+                                lower_bound = -min(starts)                 # delta >= -min(start)
+                                upper_bound = max_secs - max(ends)         # delta <= max_secs - max(end)
+                                # Intersect with ±J
+                                lo = max(-J, lower_bound)
+                                hi = min(J,  upper_bound)
+                                if lo > hi:
+                                    # No feasible jitter range; fall back to zero shift
+                                    shared_delta = 0
+                                else:
+                                    shared_delta = random.randint(lo, hi)
+                                for u in usuals:
+                                    u["start"] = u["start"].addSecs(shared_delta)
+                                    u["end"]   = u["end"].addSecs(shared_delta)
+                                print(f"random offset for all usuals on day {day_of_month}: {int(shared_delta/60)} min (range {int(lo/60)}..{int(hi/60)})")
 
                             # add some more hours
                             if distributed_minutes is not None:
